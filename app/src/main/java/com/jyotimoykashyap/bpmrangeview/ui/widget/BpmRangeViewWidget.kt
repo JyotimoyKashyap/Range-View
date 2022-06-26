@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -42,9 +43,16 @@ fun BpmRangeView(
     width: Dp = 350.dp,
     textColor: Int = if(isSystemInDarkTheme()) Color.WHITE else Color.BLACK
 ) {
+    val allowedWidth = LocalConfiguration.current.screenWidthDp.dp
+    var allowedWithValue by remember {
+        mutableStateOf(
+            allowedWidth
+        )
+    }
+    allowedWithValue = if(width > allowedWidth) allowedWithValue else width
     val isDarkTheme = isSystemInDarkTheme()
     val maxRange by remember {
-        mutableStateOf(width - 60.dp)
+        mutableStateOf(allowedWithValue - 60.dp)
     }
     var allowedBpmValue by remember {
         mutableStateOf(maxBpmValue)
@@ -98,7 +106,7 @@ fun BpmRangeView(
     Column {
         Row(
             modifier = Modifier
-                .width(width)
+                .width(allowedWithValue)
                 .height(100.dp)
                 .padding(
                     start = 10.dp,
@@ -135,7 +143,7 @@ fun BpmRangeView(
         // This is for the range meter
         Row(
             modifier = Modifier
-                .width(width)
+                .width(allowedWithValue)
                 .height(70.dp)
                 .padding(
                     start = 20.dp,

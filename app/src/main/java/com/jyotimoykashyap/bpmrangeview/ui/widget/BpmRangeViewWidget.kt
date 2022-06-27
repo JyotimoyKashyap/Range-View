@@ -4,10 +4,9 @@ package com.jyotimoykashyap.bpmrangeview.ui.widget
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.graphics.Color
 import android.graphics.Paint
+import android.util.Log
 import androidx.compose.animation.VectorConverter
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
@@ -52,12 +51,22 @@ fun BpmRangeView(
     allowedWithValue = if(width > allowedWidth) allowedWithValue else width
     val isDarkTheme = isSystemInDarkTheme()
     val maxRange by remember {
-        mutableStateOf(allowedWithValue - 60.dp)
+        mutableStateOf(allowedWithValue - 70.dp)
     }
     var allowedBpmValue by remember {
         mutableStateOf(maxBpmValue)
     }
-    allowedBpmValue = if(bpmValue <= maxBpmValue) bpmValue else maxBpmValue
+    allowedBpmValue =
+        if(bpmValue > maxBpmValue) maxBpmValue
+        else if(bpmValue < minBpmValue) minBpmValue
+        else bpmValue
+    var animatedBpmValue by remember {
+        mutableStateOf(30)
+    }
+    LaunchedEffect(key1 = allowedBpmValue) {
+        animatedBpmValue = allowedBpmValue
+    }
+    Log.i("bpmvalues" , "BPM Values : $animatedBpmValue")
 
     // animation values
     val offsetAnimation = remember {
@@ -75,11 +84,19 @@ fun BpmRangeView(
         )
     }
 
+    val offsetAnimation2 by animateFloatAsState(
+        targetValue = convertBpmToFloat(
+            bpmValue = animatedBpmValue,
+            maxDp = maxRange
+        ),
+        animationSpec = tween(1000)
+    )
+
     LaunchedEffect(key1 = offsetAnimation, key2 = valueAnimation, key3 = colorAnimation) {
         launch {
             offsetAnimation.animateTo(
                 targetValue = convertBpmToFloat(
-                    bpmValue = bpmValue,
+                    bpmValue = allowedBpmValue,
                     maxDp = maxRange
                 ),
                 animationSpec = tween(1000)
@@ -94,7 +111,7 @@ fun BpmRangeView(
         launch {
             colorAnimation.animateTo(
                 targetValue = getTargetColor(
-                    value = bpmValue,
+                    value = allowedBpmValue,
                     isDarkTheme = isDarkTheme
                 ),
                 animationSpec = tween(1000)

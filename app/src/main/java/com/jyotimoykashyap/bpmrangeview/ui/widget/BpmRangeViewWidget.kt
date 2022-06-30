@@ -10,6 +10,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
@@ -26,11 +27,13 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jyotimoykashyap.bpmrangeview.ui.theme.*
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
@@ -40,7 +43,8 @@ fun BpmRangeView(
     maxBpmValue: Int = 220,
     minBpmValue: Int = 30,
     width: Dp = 350.dp,
-    textColor: Int = if(isSystemInDarkTheme()) Color.WHITE else Color.BLACK
+    textColor: Int = if(isSystemInDarkTheme()) Color.WHITE else Color.BLACK,
+    user: String
 ) {
     val allowedWidth = LocalConfiguration.current.screenWidthDp.dp
     var allowedWithValue by remember {
@@ -94,6 +98,7 @@ fun BpmRangeView(
 
     LaunchedEffect(key1 = offsetAnimation, key2 = valueAnimation, key3 = colorAnimation) {
         launch {
+            delay(400)
             offsetAnimation.animateTo(
                 targetValue = convertBpmToFloat(
                     bpmValue = allowedBpmValue,
@@ -103,14 +108,16 @@ fun BpmRangeView(
             )
         }
         launch {
+            delay(400)
             valueAnimation.animateTo(
                 targetValue = allowedBpmValue.toFloat(),
                 animationSpec = tween(1000)
             )
         }
         launch {
+            delay(400)
             colorAnimation.animateTo(
-                targetValue = getTargetColor(
+                targetValue = getContainerColor(
                     value = allowedBpmValue,
                     isDarkTheme = isDarkTheme
                 ),
@@ -121,6 +128,7 @@ fun BpmRangeView(
 
 
     Column {
+        // this row is for the container to slide 
         Row(
             modifier = Modifier
                 .width(allowedWithValue)
@@ -157,7 +165,7 @@ fun BpmRangeView(
             }
         }
 
-        // This is for the range meter
+        // This is for the range meter + low, healthy stats 
         Row(
             modifier = Modifier
                 .width(allowedWithValue)
@@ -186,7 +194,7 @@ fun BpmRangeView(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    horizontalArrangement = Arrangement.SpaceAround,
                     verticalAlignment = Alignment.Bottom
                 ) {
                     Text(text = "Low", color = lowBpmColor)
@@ -195,6 +203,61 @@ fun BpmRangeView(
                     Text(text = "Danger", color = dangerBpmColor)
                 }
             }
+        }
+        
+        // text view for showing your heart beat stuff 
+        Text(
+            text = createSpannableText(
+                condition = getBpmCondition(allowedBpmValue),
+                color = getTextColorPerCondition(allowedBpmValue, isSystemInDarkTheme())
+            ),
+            modifier = Modifier
+                .width(allowedWithValue)
+                .padding(
+                    start = 20.dp,
+                    top = 0.dp,
+                    end = 20.dp,
+                    bottom = 10.dp
+                ),
+            textAlign = TextAlign.Center,
+            fontWeight = FontWeight.Bold,
+        )
+
+        // this text is for a particular account
+        Row(
+            modifier = Modifier
+                .width(allowedWithValue)
+                .padding(
+                    start = 20.dp,
+                    top = 0.dp,
+                    end = 20.dp,
+                    bottom = 10.dp
+                ),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "SAVED FOR",
+                fontSize = 12.sp
+            )
+            Spacer(modifier = Modifier.width(5.dp))
+            Text(
+                text = user,
+                modifier = Modifier
+                    .background(
+                        color = if(isDarkTheme)
+                            androidx.compose.ui.graphics.Color.DarkGray
+                        else androidx.compose.ui.graphics.Color.LightGray,
+                        shape = RoundedCornerShape(4.dp)
+                    )
+                    .padding(
+                        top = 3.dp,
+                        bottom = 3.dp,
+                        start = 5.dp,
+                        end = 5.dp
+                    ),
+                fontSize = 13.sp
+            )
         }
     }
 }
@@ -302,7 +365,8 @@ fun DrawScope.drawRange(
 fun BpmRangeViewPreview() {
     Column {
         BpmRangeView(
-            bpmValue = 140
+            bpmValue = 90,
+            user = "Jyotimoy"
         )
     }
 }
@@ -312,7 +376,8 @@ fun BpmRangeViewPreview() {
 fun BpmRangeViewPreviewDark() {
     Column {
         BpmRangeView(
-            bpmValue = 140
+            bpmValue = 90,
+            user = "Jyotimoy"
         )
     }
 }

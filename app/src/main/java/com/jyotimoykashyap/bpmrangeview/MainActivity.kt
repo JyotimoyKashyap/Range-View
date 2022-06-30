@@ -39,7 +39,8 @@ class MainActivity : ComponentActivity() {
                         }
                         BpmRangeView(
                             bpmValue = bpmInputValue,
-                            width = 500.dp
+                            width = 500.dp,
+                            user = "Jyotimoy"
                         )
                     }
 
@@ -66,7 +67,8 @@ fun DefaultPreview() {
             }
             BpmRangeView(
                 bpmValue = 210,
-                width = 500.dp
+                width = 500.dp,
+                user = "Jyotimoy"
             )
         }
     }
